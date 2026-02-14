@@ -2,7 +2,6 @@
 
 **Grid App** is a fast-paced, real-time interactive grid game where players compete to dominate space! Built with a modern full-stack architecture, it features seamless synchronization across sessions, allowing users to claim blocks, customize their profiles, and climb the leaderboard in real-time.
 
-![Grid.io Preview](file:///C:/Users/Sameer/.gemini/antigravity/brain/92a99220-d4c8-45e8-afa1-2bbcd8d0a895/media__1771071916865.png)
 
 ## 🚀 Features
 
@@ -72,7 +71,7 @@ docker-compose up --build
 
 ## 🌐 Live Demo
 The project is currently hosted on Render! 
-Check it out here: **[Your Render Link Here]**
+Check it out here: https://gridapp-game.onrender.com
 
 ---
 
