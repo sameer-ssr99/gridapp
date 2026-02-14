@@ -1,0 +1,16 @@
+com\antigravity\gridapp\config\WebSocketEventListener.class
+com\antigravity\gridapp\dto\ProfileUpdateDTO.class
+com\antigravity\gridapp\dto\CaptureRequest.class
+com\antigravity\gridapp\controller\GridController.class
+com\antigravity\gridapp\GridAppApplication.class
+com\antigravity\gridapp\model\Player.class
+com\antigravity\gridapp\repository\PlayerRepository.class
+com\antigravity\gridapp\repository\BlockRepository.class
+com\antigravity\gridapp\config\WebSocketConfig.class
+com\antigravity\gridapp\model\Block.class
+com\antigravity\gridapp\controller\WebSocketController.class
+com\antigravity\gridapp\dto\ProfileUpdateRequest.class
+com\antigravity\gridapp\service\GridService.class
+com\antigravity\gridapp\dto\LeaderboardEntry.class
+com\antigravity\gridapp\config\WebSocketConfig$1.class
+com\antigravity\gridapp\config\DatabaseLoader.class
