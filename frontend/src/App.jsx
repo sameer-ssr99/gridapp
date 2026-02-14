@@ -21,36 +21,48 @@ function App() {
     return color;
   };
 
-  const [username, setUsername] = useState(() => sessionStorage.getItem('grid_username') || `User-${Math.floor(Math.random() * 900) + 100}`);
-  const [color, setColor] = useState(() => sessionStorage.getItem('grid_color') || generateRandomColor());
+  // Active Profile (what the server knows)
+  const [activeUsername, setActiveUsername] = useState(() => sessionStorage.getItem('grid_username_active') || `User-${Math.floor(Math.random() * 900) + 100}`);
+  const [activeColor, setActiveColor] = useState(() => sessionStorage.getItem('grid_color_active') || generateRandomColor());
+
+  // Draft Profile (what the user is typing)
+  const [username, setUsername] = useState(activeUsername);
+  const [color, setColor] = useState(activeColor);
+
   const [showConfig, setShowConfig] = useState(false);
   const [cooldownEndsAt, setCooldownEndsAt] = useState(0);
   const [timeLeft, setTimeLeft] = useState(0);
-
-  useEffect(() => {
-    sessionStorage.setItem('grid_username', username);
-    sessionStorage.setItem('grid_color', color);
-  }, [username, color]);
+  const [errorStatus, setErrorStatus] = useState("");
 
   const handleSaveProfile = () => {
+    setErrorStatus("");
     axios.post('/api/grid/profile', {
-      oldName: sessionStorage.getItem('grid_username_synced') || username,
+      oldName: activeUsername,
       newName: username,
       newColor: color
     })
       .then(() => {
         console.log("Profile saved successfully");
-        sessionStorage.setItem('grid_username_synced', username);
+        setActiveUsername(username);
+        setActiveColor(color);
+        sessionStorage.setItem('grid_username_active', username);
+        sessionStorage.setItem('grid_color_active', color);
         setShowConfig(false);
       })
-      .catch(err => console.error("Save profile error:", err));
+      .catch(err => {
+        const msg = err.response?.data || "Failed to save profile";
+        setErrorStatus(msg);
+        console.error("Save profile error:", err);
+      });
   };
 
   useEffect(() => {
-    if (!sessionStorage.getItem('grid_username_synced')) {
-      sessionStorage.setItem('grid_username_synced', username);
+    // Sync draft with active on mount or reset
+    if (!showConfig) {
+      setUsername(activeUsername);
+      setColor(activeColor);
     }
-  }, []);
+  }, [showConfig, activeUsername, activeColor]);
 
   useEffect(() => {
     axios.get('/api/grid')
@@ -60,7 +72,6 @@ function App() {
       })
       .catch(error => {
         console.error("Error fetching grid:", error);
-        alert("Failed to connect to backend server. Make sure it is running at 127.0.0.1:8080");
       });
 
     axios.get('/api/grid/active-users')
@@ -160,7 +171,7 @@ function App() {
       setCooldownEndsAt(Date.now() + 3000); // 3s cooldown
     }
 
-    const payload = { x, y, ownerName: username, color };
+    const payload = { x, y, ownerName: activeUsername, color: activeColor };
 
     // Use REST for capture as it's more reliable for sending data, 
     // the backend will broadcast the result via WebSocket
@@ -172,9 +183,9 @@ function App() {
       .catch(err => {
         console.error("Capture error:", err);
       });
-  }, [blocks, username, color, cooldownEndsAt]);
+  }, [blocks, activeUsername, activeColor, cooldownEndsAt]);
 
-  const myCount = useMemo(() => blocks.filter(b => b.ownerName === username).length, [blocks, username]);
+  const myCount = useMemo(() => blocks.filter(b => b.ownerName === activeUsername).length, [blocks, activeUsername]);
 
   return (
     <div className="h-screen w-screen bg-[#0d0221] text-white overflow-hidden flex relative font-sans">
@@ -198,15 +209,15 @@ function App() {
 
           <div className="space-y-4">
             <div className="bg-white/5 p-4 rounded-2xl border border-white/10">
-              <div className="flex items-center gap-4">
+              <div className="items-center flex gap-4">
                 <div
                   className="w-12 h-12 rounded-xl cursor-pointer transition-transform hover:scale-110 shadow-lg"
-                  style={{ backgroundColor: color, boxShadow: `0 0 20px ${color}40` }}
+                  style={{ backgroundColor: activeColor, boxShadow: `0 0 20px ${activeColor}40` }}
                   onClick={() => setShowConfig(!showConfig)}
                 />
                 <div className="flex-1 min-w-0">
                   <div className="text-[10px] uppercase font-bold text-white/40 mb-1">Commander</div>
-                  <div className="text-lg font-black truncate">{username}</div>
+                  <div className="text-lg font-black truncate">{activeUsername}</div>
                 </div>
               </div>
             </div>
@@ -250,9 +261,16 @@ function App() {
                     className="w-full h-10 p-0 border-0 rounded-xl cursor-pointer bg-transparent"
                   />
                 </div>
+
+                {errorStatus && (
+                  <div className="text-red-500 text-[10px] font-bold uppercase text-center bg-red-500/10 p-2 rounded-lg border border-red-500/20">
+                    {errorStatus}
+                  </div>
+                )}
+
                 <button
                   onClick={handleSaveProfile}
-                  className="w-full bg-cyan-500 text-black font-black py-3 rounded-xl hover:bg-cyan-400 transition-all uppercase text-xs tracking-widest"
+                  className="w-full bg-cyan-500 text-black font-black py-3 rounded-xl hover:bg-cyan-400 transition-all uppercase text-xs tracking-widest mt-2"
                 >
                   Apply Changes
                 </button>
